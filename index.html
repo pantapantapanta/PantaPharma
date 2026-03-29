@@ -6,9 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0A0F1C">
-<title>Farmaci & Integratori</title>
+<title>PantaPharma</title>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -88,19 +89,14 @@ body{
 
 /* ── Source group cards ── */
 .src-group{
-  margin-bottom:6px;
-  border-radius:11px;
-  overflow:hidden;
-  border:1px solid rgba(51,65,85,.35);
-  background:rgba(15,23,42,.5);
+  margin-bottom:10px;
   transition:all .3s;
 }
-.src-group.grp-done{opacity:.5;border-color:rgba(34,197,94,.15)}
+.src-group.grp-done{opacity:.5}
 
 .src-header{
   display:flex;align-items:center;gap:8px;
-  padding:8px 12px;
-  background:rgba(30,41,59,.55);
+  padding:6px 4px;
   cursor:pointer;user-select:none;
 }
 .src-emoji{font-size:20px;width:28px;text-align:center}
@@ -108,19 +104,22 @@ body{
 .src-counter{
   margin-left:auto;
   font-size:11px;font-family:'JetBrains Mono',monospace;
-  padding:2px 7px;border-radius:6px;
-  background:rgba(30,41,59,.8);color:#64748B;
+  color:#475569;
 }
-.src-counter.all{background:rgba(34,197,94,.15);color:#4ADE80}
+.src-counter.all{color:#4ADE80}
 
-.src-items{padding:0}
+.src-items{
+  margin-left:16px;padding-left:12px;
+  border-left:2px solid rgba(51,65,85,.4);
+}
+.src-group.grp-done .src-items{border-left-color:rgba(34,197,94,.2)}
 
 .item{
   display:flex;align-items:center;gap:11px;
   padding:10px 12px 10px 14px;
   cursor:pointer;user-select:none;transition:all .15s;
-  border-top:1px solid rgba(51,65,85,.15);
 }
+.src-items .item{border-top:1px solid rgba(51,65,85,.08)}
 .src-items .item:first-child{border-top:none}
 .item:active{background:rgba(51,65,85,.2)}
 .item.checked{background:rgba(15,23,42,.3)}
@@ -192,65 +191,40 @@ body{
   color:#EF4444;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;
 }
 .reset-btn:active{background:rgba(220,38,38,.08)}
+
+/* Onboarding / upload screen */
+.onboard{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:80vh;padding:40px 24px;text-align:center;
+}
+.onboard-icon{font-size:64px;margin-bottom:20px}
+.onboard-title{font-size:22px;font-weight:700;color:#F1F5F9;margin-bottom:8px}
+.onboard-desc{font-size:14px;color:#94A3B8;line-height:1.5;max-width:300px;margin-bottom:32px}
+.upload-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 28px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,#3B82F6,#2563EB);
+  color:white;font-size:15px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .2s;
+}
+.upload-btn:active{transform:scale(.97);opacity:.9}
+.upload-btn svg{width:20px;height:20px}
+#file-input{display:none}
+
+.update-data-btn{
+  width:100%;padding:12px;margin-top:8px;background:transparent;
+  border:1px solid rgba(59,130,246,.3);border-radius:10px;
+  color:#60A5FA;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;
+}
+.update-data-btn:active{background:rgba(59,130,246,.08)}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// ─── DATA ──────────────────────────────────────────────
-const SOURCES={
-  "\u{1F4AD}":"Inalatore",
-  "\u{1F4C1}":"Stick / bustina",
-  "\u{1F9CB}":"Shaker",
-  "\u{1F504}":"Dispenser",
-  "\u{1F39B}\uFE0F":"Blister",
-  "\u{1F944}":"Cucchiaino",
-  "\u{1F489}":"Iniezione",
-};
-
-const SCHEDULE=[
-  {slot:"Appena svegliato",icon:"\u{1F305}",time:"~07:00",items:[
-    {id:"relvar",name:"Relvar 96/22",dose:"1 Puff",fn:"Controllo asma/BPCO",pr:"ESSENZIALE",em:"\u{1F4AD}"},
-    {id:"cortirina-am",name:"Cortirina",dose:"1 per narice",fn:"Rinite allergica",pr:"ESSENZIALE",em:"\u{1F4AD}"},
-  ]},
-  {slot:"Colazione",icon:"\u2615",time:"~08:00",items:[
-    {id:"vitalongum",name:"Vitalongum Neobilive",dose:"1 stick",fn:"Probiotico reflusso/IPP",pr:"OTTIMIZZANTE",em:"\u{1F4C1}"},
-    {id:"velutea",name:"Velutea Neobilive",dose:"1 bustina",fn:"Protezione vascolare + Regolarit\u00e0",pr:"OTTIMIZZANTE",em:"\u{1F9CB}"},
-    {id:"whey",name:"Whey 26g + Creatina 3g",dose:"25 grammi",fn:"Sintesi proteica, massa magra",pr:"PRIORITARIO",em:"\u{1F9CB}"},
-    {id:"creatina",name:"Creatina Optimum Nutrition",dose:"2 grammi",fn:"Forza, ATP, recovery",pr:"PRIORITARIO",em:"\u{1F9CB}"},
-    {id:"hmb1",name:"HMB 1000mg + D3 500 IU",dose:"1 cpr",fn:"Anti-catabolismo",pr:"PRIORITARIO",em:"\u{1F504}"},
-    {id:"taurina",name:"Taurina 1000mg",dose:"1 cpr",fn:"TPSV / tono vagale",pr:"OTTIMIZZANTE",em:"\u{1F504}"},
-  ]},
-  {slot:"Pranzo",icon:"\u{1F37D}\uFE0F",time:"~13:00",items:[
-    {id:"omegor",name:"Omegor EPA/DHA + Vit E",dose:"4 capsule",fn:"TG / CV / placca LAD / FC riposo",pr:"ESSENZIALE",em:"\u{1F39B}\uFE0F"},
-    {id:"ubiquinolo",name:"Ubiquinolo 200mg",dose:"1 capsula",fn:"CoQ10 (ridotto da statina)",pr:"ESSENZIALE",em:"\u{1F504}"},
-    {id:"astaxantina",name:"Astaxantina 12mg",dose:"1 capsula",fn:"Antiossidante (in esaurimento)",pr:"OPZIONALE",em:"\u{1F504}"},
-    {id:"d3k2",name:"D3 1000 IU + K2 MK-7",dose:"1 capsula",fn:"Ossa / immunit\u00e0 / metabolismo Ca",pr:"PRIORITARIO",em:"\u{1F504}"},
-    {id:"hmb2",name:"HMB 1000mg + D3 500 IU",dose:"1 cpr",fn:"Anti-catabolismo",pr:"PRIORITARIO",em:"\u{1F504}"},
-  ]},
-  {slot:"Cena",icon:"\u{1F377}",time:"~20:00",items:[
-    {id:"cortirina-pm",name:"Cortirina",dose:"1 Puff/narice",fn:"Rinite allergica",pr:"ESSENZIALE",em:"\u{1F4AD}"},
-    {id:"cholecomb",name:"Cholecomb 5/10mg",dose:"1 cpr",fn:"LDL / stabilizzazione placca LAD",pr:"CRITICO",em:"\u{1F39B}\uFE0F"},
-    {id:"pafinur",name:"Pafinur",dose:"1 cpr",fn:"Rinite allergica stagionale",pr:"ESSENZIALE",em:"\u{1F39B}\uFE0F"},
-    {id:"tadalafil",name:"Tadalafil 5mg",dose:"1 cpr",fn:"IPB, nicturia",pr:"ESSENZIALE",em:"\u{1F39B}\uFE0F"},
-    {id:"melatonina",name:"Melatonin IR/XR",dose:"1-3 cps",fn:"Latenza sonno (circadiano)",pr:"PRIORITARIO",em:"\u{1F504}"},
-  ]},
-  {slot:"Sera",icon:"\u{1F319}",time:"~21:30",items:[
-    {id:"glicina",name:"Glycine gloryfeel",dose:"3 grammi",fn:"Sonno profondo, ipotermico",pr:"PRIORITARIO",em:"\u{1F944}"},
-    {id:"trittico",name:"Trittico 50mg RI",dose:"1 cpr",fn:"Insonnia (mantenimento)",pr:"ESSENZIALE",em:"\u{1F39B}\uFE0F"},
-    {id:"neuromag",name:"Neuro-Mag 48mg",dose:"3 capsule",fn:"Cognitivo + Neuroprotezione",pr:"OTTIMIZZANTE",em:"\u{1F504}"},
-    {id:"magnesio",name:"Mg Bisglicinato 133mg",dose:"2 capsule",fn:"Sonno / neuromuscolare / vagale",pr:"PRIORITARIO",em:"\u{1F504}"},
-    {id:"ashwagandha",name:"Ashwagandha Sensoril 125mg",dose:"2 capsule",fn:"HRV / vagale / cortisolo",pr:"OTTIMIZZANTE",em:"\u{1F504}"},
-    {id:"theanine",name:"L-Theanine 200mg",dose:"1 capsula",fn:"Rilassamento pre-sonno / alfa",pr:"OTTIMIZZANTE",em:"\u{1F504}"},
-    {id:"hmb3",name:"HMB 1000mg + D3 500 IU",dose:"1 cpr",fn:"Anti-catabolismo",pr:"PRIORITARIO",em:"\u{1F504}"},
-  ]},
-  {slot:"Prima di dormire",icon:"\u{1F634}",time:"~23:00",items:[
-    {id:"quviviq",name:"Quviviq 50mg",dose:"1 cpr",fn:"Insonnia (DORA)",pr:"ESSENZIALE",em:"\u{1F39B}\uFE0F"},
-  ]},
-  {slot:"Domenica mattina",icon:"\u{1F489}",time:"Settimanale",weekly:true,items:[
-    {id:"mounjaro",name:"Mounjaro 5mg",dose:"1 iniezione",fn:"Glicemia / peso / metabolico",pr:"ESSENZIALE",em:"\u{1F489}"},
-  ]},
-];
+// ─── DATA (loaded from JSON, stored in localStorage) ──
+let SOURCES={};
+let SCHEDULE=[];
 
 const PC={
   CRITICO:{c:"#DC2626",l:"Critico"},
@@ -277,23 +251,89 @@ function groupByEmoji(items){
   return order.map(em=>({em,label:SOURCES[em]||"Altro",items:map[em]}));
 }
 
+// ─── DATA LOADING ─────────────────────────────────────
+function hasData(){return !!localStorage.getItem("pp-schedule")}
+
+function loadData(){
+  const raw=load("pp-schedule",null);
+  if(!raw) return false;
+  SOURCES=raw.sources||{};
+  SCHEDULE=raw.schedule||[];
+  return true;
+}
+
+function saveData(json){
+  save("pp-schedule",json);
+  SOURCES=json.sources||{};
+  SCHEDULE=json.schedule||[];
+}
+
+function handleFile(){
+  const input=document.getElementById("file-input");
+  input.click();
+}
+
+function onFileSelected(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const json=JSON.parse(ev.target.result);
+      if(!json.schedule||!Array.isArray(json.schedule)){
+        alert("Il file non contiene un campo 'schedule' valido.");
+        return;
+      }
+      saveData(json);
+      checks=load("mc-"+today,{});
+      history=load("mc-hist",{});
+      currentSlot=guessSlot();
+      render();
+      requestAnimationFrame(()=>setTimeout(scrollToFirstIncomplete,100));
+    }catch(err){
+      alert("Errore nel file JSON: "+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function updateData(){
+  document.getElementById("file-input").value="";
+  handleFile();
+}
+
 // ─── STATE ─────────────────────────────────────────────
 let checks=load("mc-"+today,{});
 let history=load("mc-hist",{});
 let view="today";
-let collapsed={};
-let currentSlot=guessSlot();
+let opened={};
+let currentSlot=0;
 
 function guessSlot(){
+  const sched=activeSched();
+  if(!sched.length) return 0;
   const h=new Date().getHours();
-  if(h<8)return 0;if(h<12)return 1;if(h<16)return 2;
-  if(h<21)return 3;if(h<23)return 4;return 5;
+  const timeSlots=[
+    {name:"Appena svegliato",max:8},
+    {name:"Domenica mattina",max:8},
+    {name:"Colazione",max:12},
+    {name:"Pranzo",max:16},
+    {name:"Cena",max:21},
+    {name:"Sera",max:23},
+    {name:"Prima di dormire",max:24},
+  ];
+  let target="Appena svegliato";
+  for(const ts of timeSlots){
+    if(h<ts.max){target=ts.name;break}
+  }
+  const idx=sched.findIndex(s=>s.slot===target);
+  return idx>=0?idx:0;
 }
 function activeSched(){return SCHEDULE.filter(s=>!(s.weekly&&!isSunday()))}
 
 function totalAndDone(){
   const s=activeSched(),total=s.reduce((a,s)=>a+s.items.length,0);
-  const done=Object.values(checks).filter(Boolean).length;
+  const done=s.flatMap(s=>s.items).filter(i=>checks[i.id]).length;
   return{total,done,pct:total?Math.round(done/total*100):0};
 }
 function slotStats(slot){
@@ -306,7 +346,6 @@ function saveHist(){
 }
 
 // ─── ACTIONS ───────────────────────────────────────────
-// Store source group IDs for click handlers
 const _grpRegistry={};
 let _grpIdx=0;
 
@@ -333,15 +372,32 @@ function toggleSlot(si){
   save("mc-"+today,checks);saveHist();render();
 }
 
-function toggleCollapse(si){collapsed[si]=!collapsed[si];render()}
+function toggleCollapse(si){opened[si]=!opened[si];render()}
 
 function resetDay(){
   checks={};save("mc-"+today,checks);saveHist();render();
 }
 
 // ─── RENDER ────────────────────────────────────────────
+function renderOnboard(){
+  const app=document.getElementById("app");
+  app.innerHTML=`
+    <input type="file" id="file-input" accept=".json,application/json" onchange="onFileSelected(event)">
+    <div class="onboard">
+      <div class="onboard-icon">\u{1F48A}</div>
+      <div class="onboard-title">PantaPharma</div>
+      <div class="onboard-desc">Per iniziare, carica il file JSON con il protocollo di farmaci e integratori.</div>
+      <button class="upload-btn" onclick="handleFile()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Carica schedule.json
+      </button>
+    </div>`;
+}
+
 function render(){
-  _grpIdx=0; // reset group registry
+  if(!SCHEDULE.length){renderOnboard();return}
+
+  _grpIdx=0;
   const app=document.getElementById("app");
   const{total,done,pct}=totalAndDone();
   const pctCls=pct===100?"done":pct>=50?"half":"low";
@@ -349,9 +405,10 @@ function render(){
   const sched=activeSched();
   const dayStr=new Date().toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"});
 
-  let h=`<div class="header">
+  let h=`<input type="file" id="file-input" accept=".json,application/json" onchange="onFileSelected(event)">
+  <div class="header">
     <div class="header-top">
-      <div><div class="date-label">${dayStr}</div><div class="title">Farmaci & Integratori</div></div>
+      <div><div class="date-label">${dayStr}</div><div class="title">PantaPharma</div></div>
       <div class="tabs">
         <button class="tab${view==="today"?" active":""}" onclick="view='today';render()">Oggi</button>
         <button class="tab${view==="stats"?" active":""}" onclick="view='stats';render()">Storico</button>
@@ -368,12 +425,12 @@ function render(){
     h+=`<div class="slots">`;
     sched.forEach((slot,si)=>{
       const{done:sd,total:st,allDone}=slotStats(slot);
-      const isColl=collapsed[si]===true;
+      const isColl=!opened[si];
       const isCur=si===currentSlot;
       const hdrCls=allDone?"alldone":isCur?"current":"";
       const groups=groupByEmoji(slot.items);
 
-      h+=`<div class="slot${allDone?" completed":""}">
+      h+=`<div class="slot${allDone?" completed":""}" id="slot-${si}">
         <button class="slot-header ${hdrCls}" onclick="toggleCollapse(${si})">
           <div class="slot-left">
             <span class="slot-icon">${slot.icon}</span>
@@ -420,13 +477,13 @@ function render(){
             </div>
           </div>`;
         });
-        h+=`</div></div>`; // src-items, src-group
+        h+=`</div></div>`;
       });
 
       if(st>1){
         h+=`<button class="mark-all" onclick="event.stopPropagation();toggleSlot(${si})">${allDone?"Deseleziona tutto":"Segna tutto \u2713"}</button>`;
       }
-      h+=`</div></div>`; // slot-body, slot
+      h+=`</div></div>`;
     });
     h+=`</div>`;
 
@@ -485,17 +542,36 @@ function render(){
     });
     h+=`</div>`;
 
+    h+=`<button class="update-data-btn" onclick="updateData()">Aggiorna dati (carica nuovo JSON)</button>`;
     h+=`<button class="reset-btn" onclick="resetDay()">Reset giornata</button></div>`;
   }
 
   app.innerHTML=h;
 }
 
+// ─── AUTO-SCROLL ──────────────────────────────────────
+function scrollToFirstIncomplete(){
+  const sched=activeSched();
+  const anyChecked=Object.values(checks).some(Boolean);
+  if(!anyChecked) return;
+  for(let i=0;i<sched.length;i++){
+    const{allDone}=slotStats(sched[i]);
+    if(!allDone){
+      const el=document.getElementById("slot-"+i);
+      if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+      return;
+    }
+  }
+}
+
 // ─── PWA ───────────────────────────────────────────────
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 
 // ─── INIT ──────────────────────────────────────────────
+loadData();
+currentSlot=guessSlot();
 render();
+requestAnimationFrame(()=>setTimeout(scrollToFirstIncomplete,100));
 </script>
 </body>
 </html>
